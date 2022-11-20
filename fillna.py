@@ -29,9 +29,9 @@ if __name__ == '__main__':
     data['nomprov'] = data['nomprov'].fillna('NA')
     data['segmento'] = data['segmento'].fillna('NA')
 
-    #dummy_column = ['ind_empleado', 'pais_residencia', 'sexo', 'indrel_1mes', 'tiprel_1mes', 'canal_entrada', 'nomprov', 'segmento']
-    #dummy_data = pd.get_dummies(data[dummy_column]).astype(bool)
-    
+    dummy_column = ['ind_empleado', 'pais_residencia', 'sexo', 'indrel_1mes', 'tiprel_1mes', 'canal_entrada', 'nomprov', 'segmento']
+    dummy_data = pd.get_dummies(data[dummy_column]).astype(bool)
+    data = pd.concat([data, dummy_data], axis=1)
     data.to_pickle(args.output_data)
     #dummy_data.to_pickle('train_preprocessed_dummy.pkl')
 
