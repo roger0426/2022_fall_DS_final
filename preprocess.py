@@ -5,6 +5,8 @@ from pathlib import Path
 import logging 
 from tqdm import tqdm 
 
+from fillna import fillna
+
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s",
     level=logging.INFO,
@@ -12,11 +14,33 @@ logging.basicConfig(
 )
 
 
+to_bool_list = ['ind_ahor_fin_ult1', 'ind_aval_fin_ult1', 'ind_cco_fin_ult1', 'ind_cder_fin_ult1', 
+'ind_cno_fin_ult1', 'ind_ctju_fin_ult1', 'ind_ctma_fin_ult1', 
+'ind_ctop_fin_ult1', 'ind_ctpp_fin_ult1', 'ind_deco_fin_ult1', 'ind_deme_fin_ult1', 'ind_dela_fin_ult1', 
+'ind_ecue_fin_ult1', 'ind_fond_fin_ult1', 'ind_hip_fin_ult1', 'ind_plan_fin_ult1', 'ind_pres_fin_ult1', 
+'ind_reca_fin_ult1', 'ind_tjcr_fin_ult1', 'ind_valo_fin_ult1', 'ind_viv_fin_ult1', 'ind_nomina_ult1', 
+'ind_nom_pens_ult1', 'ind_recibo_ult1', 'ind_ahor_fin_ult1_history', 'ind_ahor_fin_ult1_3month', 
+'ind_aval_fin_ult1_history', 'ind_aval_fin_ult1_3month', 'ind_cco_fin_ult1_history', 'ind_cco_fin_ult1_3month', 
+'ind_cder_fin_ult1_history', 'ind_cder_fin_ult1_3month', 'ind_cno_fin_ult1_history', 'ind_cno_fin_ult1_3month', 
+'ind_ctju_fin_ult1_history', 'ind_ctju_fin_ult1_3month', 'ind_ctma_fin_ult1_history', 'ind_ctma_fin_ult1_3month', 
+'ind_ctop_fin_ult1_history', 'ind_ctop_fin_ult1_3month', 'ind_ctpp_fin_ult1_history', 'ind_ctpp_fin_ult1_3month', 
+'ind_deco_fin_ult1_history', 'ind_deco_fin_ult1_3month', 'ind_deme_fin_ult1_history', 'ind_deme_fin_ult1_3month', 
+'ind_dela_fin_ult1_history', 'ind_dela_fin_ult1_3month', 'ind_ecue_fin_ult1_history', 'ind_ecue_fin_ult1_3month', 
+'ind_fond_fin_ult1_history', 'ind_fond_fin_ult1_3month', 'ind_hip_fin_ult1_history', 'ind_hip_fin_ult1_3month', 
+'ind_plan_fin_ult1_history', 'ind_plan_fin_ult1_3month', 'ind_pres_fin_ult1_history', 'ind_pres_fin_ult1_3month', 
+'ind_reca_fin_ult1_history', 'ind_reca_fin_ult1_3month', 'ind_tjcr_fin_ult1_history', 'ind_tjcr_fin_ult1_3month', 
+'ind_valo_fin_ult1_history', 'ind_valo_fin_ult1_3month', 'ind_viv_fin_ult1_history', 'ind_viv_fin_ult1_3month', 
+'ind_nomina_ult1_history', 'ind_nomina_ult1_3month', 'ind_nom_pens_ult1_history', 'ind_nom_pens_ult1_3month', 
+'ind_recibo_ult1_history', 'ind_recibo_ult1_3month']
+int_down_list = ['ncodpers', 'age', 'antiguedad', 'renta', 'ind_actividad_cliente', 'renta']
+float_down_list = []
+
 if __name__ == '__main__':
+    logging.info('Start process')
     #data = pd.read_csv('train_ver2.csv')
     parser  = argparse.ArgumentParser()
-    parser.add_argument('--input_data', type=Path, default=Path('train_ver2.csv'))
-    parser.add_argument('--output_data', type=Path, default=Path('train_preprocessed.pkl'))
+    parser.add_argument('--input_data', type=Path, default=Path('./origin_data/train_ver2.csv.zip'))
+    parser.add_argument('--output_data', type=Path, default=Path('preprocessed_test.pkl'))
 
 
     args = parser.parse_args()
@@ -24,6 +48,7 @@ if __name__ == '__main__':
     
     data = pd.read_csv(args.input_data)
     logging.info('data reading done')
+    # data = data[:int(len(data)/100)]
 
     data['fecha_dato'] = pd.to_datetime(data['fecha_dato'])
 
@@ -45,12 +70,14 @@ if __name__ == '__main__':
     #customer household income preprocessing
     data['renta'] = data['renta'].fillna(-1).apply(int)
     #active customer preprocessing
-    data['ind_actividad_cliente'] = data['ind_actividad_cliente'].fillna(0).apply(int)
+    data['ind_actividad_cliente'] = data['ind_actividad_cliente'].fillna(0).astype(bool)
 
     logging.info('data cleaning done')
 
     customer_max_date = data.groupby('ncodpers').agg({'fecha_dato':max})
-    id_list = [0] + (pd.merge(customer_max_date, data.reset_index()[['index','ncodpers', 'fecha_dato']].reset_index(), how='inner', on=['ncodpers', 'fecha_dato'])['level_0'] + 1).to_list()
+    id_list = [0] + (pd.merge(customer_max_date, \
+                            data.reset_index()[['index','ncodpers', 'fecha_dato']].reset_index(), \
+                                                how='inner', on=['ncodpers', 'fecha_dato'])['level_0'] + 1).to_list()
     split_size = 100
     c_num = len(id_list) - 1
     step_size = c_num // split_size
@@ -63,8 +90,6 @@ if __name__ == '__main__':
 
     logging.info('split index done')
 
-        
-        
 
     #preprocess history product used and future product used
     product_key = []
@@ -83,7 +108,12 @@ if __name__ == '__main__':
         else:
             customer_key.append(k)
 
+    print(data.info(verbose=True))
     logging.info('product key select done')
+
+    # without   take 3.5 min for 1/100
+    # with      take 1.2 min for 1/100
+    for target in to_bool_list: data[target] = data[target].astype(bool)
 
     for split_index in tqdm(range(len(id_list_short)-1)):
         s = id_list_short[split_index]
@@ -101,7 +131,9 @@ if __name__ == '__main__':
             past_month_product = past_month_product.shift(-i-1)
             reset_date = customer_max_date - pd.DateOffset(months=i)
             #past_month_product[['ncodpers', 'fecha_dato']] = x[['ncodpers', 'fecha_dato']]
-            reset_index = pd.merge(data_split[['ncodpers', 'fecha_dato']].reset_index(), reset_date, how='inner', left_on=['ncodpers', 'fecha_dato'], right_on=['ncodpers', 'fecha_dato']).set_index('index')
+            reset_index = pd.merge(data_split[['ncodpers', 'fecha_dato']].reset_index(), reset_date, how='inner', \
+                                                left_on=['ncodpers', 'fecha_dato'], \
+                                                right_on=['ncodpers', 'fecha_dato']).set_index('index')
             reset_index[product_key] = False
             past_month_product.update(reset_index[product_key])
             past_month_product = past_month_product.fillna(False)
@@ -109,11 +141,30 @@ if __name__ == '__main__':
 
         history_product = data_split.groupby(['ncodpers'])[product_key].cumsum().astype(bool)
 
+        # print('d')
+
         data.update(history_product.add_suffix('_history'))
         data.update(three_month_product.add_suffix('_3month'))
         #data = data.join(history_product, how='left', lsuffix='', rsuffix='_history')
         #data = data.join(three_month_product, how='left', lsuffix='', rsuffix='_three_month')
-        
 
+        # print('e')
+    for name, values in data.items():
+        print('{name}: {value}'.format(name=name, value=values[0]))
+    print(data.info(verbose=True))
+
+    data = fillna(data)
+
+    for target in to_bool_list: data[target] = data[target].astype(bool)
+    for target in int_down_list: data[target] = data[target].apply(pd.to_numeric, errors='coerce', downcast='integer')
+    for target in float_down_list: data[target] = data[target].apply(pd.to_numeric, errors='coerce', downcast='float')
+
+
+    print(data.info(verbose=True))
+
+
+
+    print(data.columns.tolist())
+    
     logging.info('product preprocessing done')
     data.to_pickle(args.output_data)

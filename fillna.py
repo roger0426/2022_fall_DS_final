@@ -2,14 +2,7 @@ import pandas as pd
 import argparse
 from pathlib import Path
 
-if __name__ == '__main__':
-    parser  = argparse.ArgumentParser()
-    parser.add_argument('--input_data', type=Path, default=Path('train_preprocessed.pkl'))
-    parser.add_argument('--output_data', type=Path, default=Path('train_preprocessed.pkl'))
-
-
-    args = parser.parse_args()
-    data = pd.read_pickle(args.input_data)
+def fillna(data):
     #fillna
     data['ind_empleado'] = data['ind_empleado'].fillna('NA')
     data['pais_residencia'] = data['pais_residencia'].fillna('NA')
@@ -32,7 +25,17 @@ if __name__ == '__main__':
     dummy_column = ['ind_empleado', 'pais_residencia', 'sexo', 'indrel_1mes', 'tiprel_1mes', 'canal_entrada', 'nomprov', 'segmento']
     dummy_data = pd.get_dummies(data[dummy_column]).astype(bool)
     data = pd.concat([data, dummy_data], axis=1)
+
+    return data
+    
+if __name__ == '__main__':
+    parser  = argparse.ArgumentParser()
+    parser.add_argument('--input_data', type=Path, default=Path('train_preprocessed.pkl'))
+    parser.add_argument('--output_data', type=Path, default=Path('train_preprocessed.pkl'))
+
+    args = parser.parse_args()
+    data = pd.read_pickle(args.input_data)
+    data = fillna(data)
+
     data.to_pickle(args.output_data)
     #dummy_data.to_pickle('train_preprocessed_dummy.pkl')
-
-    
