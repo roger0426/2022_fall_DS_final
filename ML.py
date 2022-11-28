@@ -97,7 +97,7 @@ for target in product:
         '''
         # model=svm.LinearSVC(C=1, max_iter=1000, class_weight='balanced',)
         model = BayesSearchCV(
-            svm.SVC(class_weight='balanced_subsample'),
+            svm.SVC(class_weight='balanced'),
             {
                 'C': (1e-6, 1e+2, 'log-uniform'),
                 'gamma': (1e-6, 1e+1, 'log-uniform'),
@@ -168,7 +168,7 @@ for target in product:
             #"warm_start": Categorical([True, False])
         },]
         model = BayesSearchCV(
-            LogisticRegression(max_iter=5000, class_weight='balanced_subsample'), 
+            LogisticRegression(max_iter=5000, class_weight='balanced'), 
             search_space,
             n_iter=32, 
             n_jobs=8,
@@ -185,7 +185,7 @@ for target in product:
         model = DecisionTreeClassifier(criterion = 'entropy',
                                        max_depth=6,
                                        random_state=91,
-                                       class_weight='balanced_subsample')
+                                       class_weight='balanced')
         ############################### Decision Tree ###############################
 
     elif method == "random_forest":
@@ -217,7 +217,7 @@ for target in product:
         from imblearn.ensemble import BalancedRandomForestClassifier
         # model = RandomForestClassifier(n_estimators=100, 
         #                                criterion = 'gini',
-        #                                class_weight='balanced') #class_weight='balanced_subsample'
+        #                                class_weight='balanced')
         model = BalancedRandomForestClassifier(n_estimators=100, 
                                                criterion = 'gini')
         ############################### Random Forest ###############################
