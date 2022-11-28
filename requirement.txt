@@ -1,0 +1,8 @@
+seaborn
+matplotlib
+sklearn
+scikit-optimize
+imblearn
+xgboost
+lightgbm
+catboost

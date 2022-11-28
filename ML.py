@@ -257,7 +257,7 @@ for target in product:
                     'max_depth': range (2, 10, 1),
                     'n_estimators': range(60, 250, 40),
                     'learning_rate': [0.1, 0.01, 0.005],
-                    'scale_pos_weight': [bal*0.7, bal, bal*1.5, bal*2]
+                    'scale_pos_weight': [int(bal*0.7), bal, int(bal*1.5), bal*2]
                     }
         model = BayesSearchCV(
             XGBClassifier(tree_method='gpu_hist', gpu_id=0), 
@@ -273,6 +273,10 @@ for target in product:
         ################################## XGBoost ##################################
 
     elif method == "lightgbm":
+        '''
+        cd LightGBM && rm -rf build && mkdir build && cd build && cmake -DUSE_GPU=1 
+        ../../LightGBM && make -j4 && cd ../python-package && python3 setup.py install --precompile --gpu;
+        '''
         ################################# LightGBM ##################################
         from lightgbm import LGBMClassifier
         '''
@@ -293,7 +297,7 @@ for target in product:
         - score: 預測成功的比例。
         - predict_proba: 預測每個類別的機率值。
         '''
-        lightgbm = LGBMClassifier(device= 'gpu', gpu_platform_id=0, gpu_device_id=0, class_weight='balanced')
+        model = LGBMClassifier(device= 'gpu', gpu_platform_id=0, gpu_device_id=0, class_weight='balanced')
         # model = LGBMClassifier(is_unbalance=True)
         
         ################################# LightGBM ##################################
