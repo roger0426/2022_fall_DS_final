@@ -82,6 +82,14 @@ else:
 
 for target in product:
 
+    print(target)
+    fp.write(f"{target}\n")
+    
+    X = np.concatenate((X, np.expand_dims(data[target+'_history'].values, axis=1)), axis=1)
+    y = data[target+'_3month'].values
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
     if method == "svm":
         #################################### SVM ####################################
         from sklearn import svm
@@ -324,14 +332,6 @@ for target in product:
     best_model = f"./result/{method}/{target}_model.pkl"
     # load the model
     # model = pickle.load(open(best_model, 'rb'))
-
-    print(target)
-    fp.write(f"{target}\n")
-    
-    X = np.concatenate((X, np.expand_dims(data[target+'_history'].values, axis=1)), axis=1)
-    y = data[target+'_3month'].values
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     
     model.fit(X_train, y_train)
     # 使用訓練資料預測分類
