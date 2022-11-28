@@ -331,11 +331,7 @@ for target in product:
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     
-    if method == "xgboost":
-        classes_weights = class_weight.compute_sample_weight(class_weight='balanced', y=y_train)
-        model.fit(X_train, y_train, sample_weight=classes_weights)
-    else:
-        model.fit(X_train, y_train)
+    model.fit(X_train, y_train)
     # 使用訓練資料預測分類
     # predicted=model.predict(X_train)
     # 計算準確率
