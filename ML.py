@@ -1,3 +1,4 @@
+import os
 import sys
 import pickle
 import numpy as np
@@ -69,6 +70,7 @@ with open('../data/my_train_v3.pkl', 'rb') as f:
 method = sys.argv[1]
 print(method)
 
+os.makedirs(f'./result/{method}', exist_ok=True)
 fp = open(f"./result/{method}/result.txt", "w")
 
 
@@ -401,7 +403,7 @@ for target in product:
                                    rownames=['Actual'],
                                    colnames=['Predicted'])
     plot = sns.heatmap(confusion_matrix, linewidth=.5, annot=True, fmt=',.0f')
-    plot.set_title(f'-{method}- {target} Confusion Matrix')
+    plot.set_title(f'{method} % {target}')
     fig = plot.get_figure()
     fig.savefig(f'./result/{method}/{target}_confmat.png')
     plt.clf()
