@@ -1,0 +1,72 @@
+ind_ahor_fin_ult1
+train roc_auc_score: 0.9196766166901909
+test roc_auc_score: 0.9197233893282883
+ind_aval_fin_ult1
+train roc_auc_score: 0.964525137292104
+test roc_auc_score: 0.9646280052436698
+ind_cco_fin_ult1
+train roc_auc_score: 0.927547255898779
+test roc_auc_score: 0.927475761469034
+ind_cder_fin_ult1
+train roc_auc_score: 0.9984381748450752
+test roc_auc_score: 0.9984105452871379
+ind_cno_fin_ult1
+train roc_auc_score: 0.9701879202737357
+test roc_auc_score: 0.9701834425640067
+ind_ctju_fin_ult1
+train roc_auc_score: 0.9971949314050537
+test roc_auc_score: 0.9971802767226841
+ind_ctma_fin_ult1
+train roc_auc_score: 0.959767600566297
+test roc_auc_score: 0.9598820435675622
+ind_ctop_fin_ult1
+train roc_auc_score: 0.9656033492431281
+test roc_auc_score: 0.9655610678059066
+ind_ctpp_fin_ult1
+train roc_auc_score: 0.9908416857966601
+test roc_auc_score: 0.9908344058512245
+ind_deco_fin_ult1
+train roc_auc_score: 0.9275807662520312
+test roc_auc_score: 0.9272946748973314
+ind_deme_fin_ult1
+train roc_auc_score: 0.8912067246224648
+test roc_auc_score: 0.8912487393947676
+ind_dela_fin_ult1
+train roc_auc_score: 0.9796755507062517
+test roc_auc_score: 0.9795614867319549
+ind_ecue_fin_ult1
+train roc_auc_score: 0.9754430717437994
+test roc_auc_score: 0.975224743370458
+ind_fond_fin_ult1
+train roc_auc_score: 0.975556950938696
+test roc_auc_score: 0.9753640120122004
+ind_hip_fin_ult1
+train roc_auc_score: 0.9255040577864106
+test roc_auc_score: 0.9257067136819679
+ind_plan_fin_ult1
+train roc_auc_score: 0.9526897285726728
+test roc_auc_score: 0.952358176544099
+ind_pres_fin_ult1
+train roc_auc_score: 0.997979857757418
+test roc_auc_score: 0.9979105969994888
+ind_reca_fin_ult1
+train roc_auc_score: 0.9750977937586174
+test roc_auc_score: 0.9752938176297672
+ind_tjcr_fin_ult1
+train roc_auc_score: 0.9553612224726217
+test roc_auc_score: 0.955359733141867
+ind_valo_fin_ult1
+train roc_auc_score: 0.955751492074148
+test roc_auc_score: 0.9559672132494137
+ind_viv_fin_ult1
+train roc_auc_score: 0.9201359605574742
+test roc_auc_score: 0.9201094584316708
+ind_nomina_ult1
+train roc_auc_score: 0.9716734837055208
+test roc_auc_score: 0.9716959821556919
+ind_nom_pens_ult1
+train roc_auc_score: 0.9706238348968231
+test roc_auc_score: 0.9705799661498792
+ind_recibo_ult1
+train roc_auc_score: 0.9466325688710101
+test roc_auc_score: 0.9466817659263773
