@@ -245,6 +245,12 @@ for target in product:
                                                criterion = 'gini')
         ############################### Random Forest ###############################
 
+    elif method == "adaboost":
+        ################################# AdaBoost ##################################
+        from imblearn.ensemble import EasyEnsembleClassifier
+        model = EasyEnsembleClassifier(sampling_strategy='float', random_state=91)
+        ################################# AdaBoost ##################################
+
     elif method == "xgboost":
         ################################## XGBoost ##################################
         from xgboost import XGBClassifier, plot_importance
@@ -459,7 +465,7 @@ for target in product:
     elif method == 'lightgbm':
         # model = Booster(model_file=best_model)
         model.booster_.save_model(best_model)#, num_iteration=model.best_iteration) 
-    elif method != 'random_forest' and method != 'decision_tree':
+    elif method != 'random_forest' and method != 'decision_tree' and method != 'adaboost':
         pickle.dump(model.best_estimator_, open(best_model, 'wb'))
 
 fp.close()
