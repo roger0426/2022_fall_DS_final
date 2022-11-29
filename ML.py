@@ -86,7 +86,7 @@ for target in product:
     fp.write(f"{target}\n")
     
     X = np.concatenate((X, np.expand_dims(data[target+'_history'].values, axis=1)), axis=1)
-    y = data[target+'_3month'].values
+    y = data[target+'_3month'].astype(int).values
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
@@ -355,7 +355,7 @@ for target in product:
         import pydotplus
         from sklearn.tree import export_graphviz
         dot_data = export_graphviz(model, out_file=None, 
-                                feature_names=X_train.columns,
+                                feature_names=onthot_col+num_col,#X_train.columns,
                                 class_names=['False', 'True'],
                                 filled=True, rounded=True,  
                                 special_characters=True)  
@@ -371,7 +371,7 @@ for target in product:
         # 繪製前五棵樹
         for index in range(0, 5):
             tree.plot_tree(model.estimators_[index],
-                        feature_names=X_train.columns,
+                        feature_names=onthot_col+num_col,#X_train.columns,
                         class_names=['False', 'True'],
                         filled = True,
                         ax = axes[index])
