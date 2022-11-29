@@ -1,3 +1,4 @@
+import re
 import os
 import sys
 import pickle
@@ -10,6 +11,9 @@ from sklearn.model_selection import train_test_split
 from skopt import BayesSearchCV
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
+
+import warnings
+warnings.filterwarnings('ignore', message='The objective has been evaluated at this point before.')
 
 onthot_col = ['ind_nuevo','indrel','indext','ind_actividad_cliente',
             'is_Spain','sexo_female','sexo_male','canal_entrada_007','canal_entrada_013',
@@ -53,7 +57,7 @@ product = ['ind_ahor_fin_ult1','ind_aval_fin_ult1','ind_cco_fin_ult1','ind_cder_
            'ind_pres_fin_ult1','ind_reca_fin_ult1','ind_tjcr_fin_ult1','ind_valo_fin_ult1',
            'ind_viv_fin_ult1','ind_nomina_ult1','ind_nom_pens_ult1','ind_recibo_ult1']
 '''
-product = ["ind_cco_fin_ult1", "ind_ctop_fin_ult1", "ind_nom_pens_ult1", "ind_ctma_fin_ult1"] # 0.65, 0.13, 0.07, 0.01
+product = ["ind_cco_fin_ult1", "ind_ctop_fin_ult1", "ind_nom_pens_ult1"]#, "ind_ctma_fin_ult1"] # 0.65, 0.13, 0.07, 0.01
 
 month3 = ['ind_ahor_fin_ult1_3month','ind_aval_fin_ult1_3month','ind_cco_fin_ult1_3month',
           'ind_cder_fin_ult1_3month','ind_cno_fin_ult1_3month','ind_ctju_fin_ult1_3month',
@@ -76,17 +80,26 @@ fp = open(f"./result/{method}/result.txt", "w")
 
 if method == "svm" or method == "logistic":
     scaled_features = StandardScaler().fit_transform(data[num_col].values)
-    X = np.concatenate((data[onthot_col].values, scaled_features), axis=1)
-else:
-    X = data[onthot_col+num_col].values
+    x = np.concatenate((data[onthot_col].values, scaled_features), axis=1)
 
 for target in product:
 
     print(target)
     fp.write(f"{target}\n")
     
-    X = np.concatenate((X, np.expand_dims(data[target+'_history'].values, axis=1)), axis=1)
-    y = data[target+'_3month'].astype(int).values
+    train_col = onthot_col+num_col+[target+'_history']
+
+    if method == "svm" or method == "logistic":
+        X = np.concatenate((x, np.expand_dims(data[target+'_history'].values, axis=1)), axis=1)
+    else:
+        X = data[train_col]
+        if method == 'lightgbm':
+            X = X.rename(columns = lambda x:re.sub('[^A-Za-z0-9_]+', '', x))
+
+    if method == 'catboost':
+        y = data[target+'_3month'].astype(int).values
+    else:
+        y = data[target+'_3month'].values
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
@@ -105,7 +118,7 @@ for target in product:
         '''
         # model=svm.LinearSVC(C=1, max_iter=1000, class_weight='balanced',)
         model = BayesSearchCV(
-            svm.SVC(class_weight='balanced'),
+            svm.SVC(class_weight='balanced', probability=True),
             {
                 'C': (1e-6, 1e+2, 'log-uniform'),
                 'gamma': (1e-6, 1e+1, 'log-uniform'),
@@ -232,7 +245,8 @@ for target in product:
 
     elif method == "xgboost":
         ################################## XGBoost ##################################
-        from xgboost import XGBClassifier
+        from xgboost import XGBClassifier, plot_importance
+        from sklearn.utils import class_weight
         '''
         Boosting 則是希望能夠由後面生成的樹，來修正前面樹學的不好的地方。
 
@@ -252,24 +266,35 @@ for target in product:
         - score: 預測成功的比例。
         - predict_proba: 預測每個類別的機率值。
         '''
-        bal = len(y)//sum(y)
-        search_space = {
-                    'max_depth': range (2, 10, 1),
-                    'n_estimators': range(60, 250, 40),
-                    'learning_rate': [0.1, 0.01, 0.005],
-                    'scale_pos_weight': [int(bal*0.7), bal, int(bal*1.5), bal*2]
-                    }
-        model = BayesSearchCV(
-            XGBClassifier(tree_method='gpu_hist', gpu_id=0), 
-            search_space,
-            n_iter=32, 
-            n_jobs=8,
-            n_points=8, 
-            cv=3, 
-            scoring="roc_auc",
-            random_state=91
+        classes_weights = class_weight.compute_sample_weight(
+            class_weight='balanced',
+            y=y_train
         )
-        # model = XGBClassifier(n_estimators=100, learning_rate= 0.3)
+        # bal = len(y)//sum(y)
+        # search_space = {
+        #                     'max_depth': range (2, 10, 1),
+        #                     'n_estimators': range(60, 250, 40),
+        #                     'learning_rate': (0.1, 0.01, 0.005, 'log-uniform'),
+        #                     'gamma': (1e-4, 1e-2, 1e-1, 'log-uniform'),
+        #                     'scale_pos_weight': (int(bal*0.7), bal, int(bal*1.5), bal*2, 'log-uniform'),
+        #                }
+        # fit_params = {
+        #                 'early_stopping_rounds': 10,
+        #                 'eval_set':[(X_test, y_test)],
+        #                 'verbose': False,
+        #              }
+        # model = BayesSearchCV(
+        #     XGBClassifier(tree_method='gpu_hist', gpu_id=0), 
+        #     search_spaces=search_space,
+        #     fit_params=fit_params,
+        #     n_iter=32, 
+        #     n_jobs=8,
+        #     n_points=8, 
+        #     cv=3, 
+        #     scoring="roc_auc",
+        #     random_state=91
+        # )
+        model = XGBClassifier()
         ################################## XGBoost ##################################
 
     elif method == "lightgbm":
@@ -278,7 +303,7 @@ for target in product:
         ../../LightGBM && make -j4 && cd ../python-package && python3 setup.py install --precompile --gpu;
         '''
         ################################# LightGBM ##################################
-        from lightgbm import LGBMClassifier
+        from lightgbm import LGBMClassifier, Booster, plot_importance
         '''
         Parameters:
         - num_iterations: 總共迭代的次數，即決策樹的個數。預設值為100。
@@ -297,8 +322,8 @@ for target in product:
         - score: 預測成功的比例。
         - predict_proba: 預測每個類別的機率值。
         '''
-        model = LGBMClassifier(device= 'gpu', gpu_platform_id=0, gpu_device_id=0, class_weight='balanced')
-        # model = LGBMClassifier(is_unbalance=True)
+        # model = LGBMClassifier(device= 'gpu', gpu_platform_id=0, gpu_device_id=0, class_weight='balanced')
+        model = LGBMClassifier(class_weight='balanced')
         
         ################################# LightGBM ##################################
     elif method == "catboost":
@@ -337,9 +362,11 @@ for target in product:
     # load the model
     # model = pickle.load(open(best_model, 'rb'))
     
-    model.fit(X_train, y_train)
-    # 使用訓練資料預測分類
-    # predicted=model.predict(X_train)
+    if method == 'xgboost':
+         model.fit(X_train, y_train, sample_weight=classes_weights)
+    else:
+        model.fit(X_train, y_train)
+
     # 計算準確率
     score = model.score(X_train, y_train)
     print('train roc_auc_score: ', score)
@@ -355,7 +382,7 @@ for target in product:
         import pydotplus
         from sklearn.tree import export_graphviz
         dot_data = export_graphviz(model, out_file=None, 
-                                feature_names=onthot_col+num_col,#X_train.columns,
+                                feature_names=train_col,
                                 class_names=['False', 'True'],
                                 filled=True, rounded=True,  
                                 special_characters=True)  
@@ -371,23 +398,22 @@ for target in product:
         # 繪製前五棵樹
         for index in range(0, 5):
             tree.plot_tree(model.estimators_[index],
-                        feature_names=onthot_col+num_col,#X_train.columns,
+                        feature_names=train_col,
                         class_names=['False', 'True'],
                         filled = True,
                         ax = axes[index])
         fig.savefig(f'./result/{method}/{target}.eps',format='eps',bbox_inches = "tight")
-        plt.clf()
+        plt.close()
         ############################### Random Forest ###############################
 
-    if method == "xgboost":
-        ################################## XGBoost ##################################
-        from xgboost import plot_importance
+    if method == "xgboost" or method == "lightgbm":
+        ############################ XGBoost # LightGBM #############################
         # from xgboost import plot_tree
-        ax = plot_importance(model, title='Feature Importance', ylabel='feature', grid=False)
+        ax = plot_importance(model, title='Feature Importance', grid=False)
         ax.figure.tight_layout()
         ax.figure.savefig(f'./result/{method}/{target}_featW.png')
-        plt.clf()
-        ################################## XGBoost ##################################
+        plt.close()
+        ############################ XGBoost # LightGBM #############################
 
     if method == "catboost":
         ################################# CatBoost ##################################
@@ -397,7 +423,7 @@ for target in product:
         shap_values_cat_train = explainercat.shap_values(X_train)
         shap.summary_plot(shap_values_cat_train, X_train, plot_type="bar", show=False)
         plt.savefig(f"./result/{method}/{target}_featW.png")
-        plt.clf()
+        plt.close()
         ################################# CatBoost ##################################
     
     # get confusion matrix
@@ -418,13 +444,20 @@ for target in product:
     # auc = roc_auc_score(y_test, probs)
     # calculate roc curves
     fpr, tpr, _ = roc_curve(y_test, probs)
-    plt.plot(fpr, tpr, marker='.', label='Logistic')
+    plt.plot(fpr, tpr, marker='.')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.legend(f'{method} {target} ROC')
+    plt.title(f'{method} % {target} % ROC')
     plt.savefig(f'./result/{method}/{target}_roc.png')
     plt.clf()
     # save the model
-    pickle.dump(model.best_estimator_, open(best_model, 'wb'))
+    if method == 'catboost' or method == 'xgboost':
+        # model.load_model(best_model)
+        model.save_model(best_model)
+    elif method == 'lightgbm':
+        # model = Booster(model_file=best_model)
+        model.booster_.save_model(best_model)#, num_iteration=model.best_iteration) 
+    elif method != 'random_forest' and method != 'decision_tree':
+        pickle.dump(model.best_estimator_, open(best_model, 'wb'))
 
 fp.close()
