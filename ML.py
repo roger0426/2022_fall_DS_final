@@ -57,7 +57,7 @@ product = ['ind_ahor_fin_ult1','ind_aval_fin_ult1','ind_cco_fin_ult1','ind_cder_
            'ind_pres_fin_ult1','ind_reca_fin_ult1','ind_tjcr_fin_ult1','ind_valo_fin_ult1',
            'ind_viv_fin_ult1','ind_nomina_ult1','ind_nom_pens_ult1','ind_recibo_ult1']
 '''
-product = ["ind_cco_fin_ult1", "ind_ctop_fin_ult1", "ind_nom_pens_ult1"]#, "ind_ctma_fin_ult1"] # 0.65, 0.13, 0.07, 0.01
+product = ["ind_cco_fin_ult1", "ind_ctop_fin_ult1", "ind_nom_pens_ult1", "ind_ctma_fin_ult1"] # 0.65, 0.13, 0.07, 0.01
 
 month3 = ['ind_ahor_fin_ult1_3month','ind_aval_fin_ult1_3month','ind_cco_fin_ult1_3month',
           'ind_cder_fin_ult1_3month','ind_cno_fin_ult1_3month','ind_ctju_fin_ult1_3month',
@@ -409,7 +409,7 @@ for target in product:
     if method == "xgboost" or method == "lightgbm":
         ############################ XGBoost # LightGBM #############################
         # from xgboost import plot_tree
-        ax = plot_importance(model, title='Feature Importance', grid=False)
+        ax = plot_importance(model, title='Feature Importance', grid=False, max_num_features=10)
         ax.figure.tight_layout()
         ax.figure.savefig(f'./result/{method}/{target}_featW.png')
         plt.close()
