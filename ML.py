@@ -116,40 +116,42 @@ for target in product:
         # 建立 kernel='rbf' 模型（adial Basis Function 高斯轉換）
         model=svm.SVC(kernel='rbf', gamma=0.7, C=1)
         '''
-        # model=svm.LinearSVC(C=1, max_iter=1000, class_weight='balanced',)
-        model = BayesSearchCV(
-            svm.SVC(class_weight='balanced', probability=True),
-            {
-                'C': (1e-6, 1e+2, 'log-uniform'),
-                'gamma': (1e-6, 1e+1, 'log-uniform'),
-                'degree': (4, 6, 8),  # integer valued parameter
-                'kernel': ['linear', 'poly', 'rbf'],  # Categorical parameter
-            },
-            n_iter=32,
-            n_jobs=8,
-            n_points=8,
-            cv=3, 
-            scoring="roc_auc",
-            random_state=91
-        )
+        # model=svm.LinearSVC(C=1, max_iter=1000, class_weight='balanced', probability=True)
+        # model=svm.SVC(kernel='rbf', gamma=0.7, C=1, class_weight='balanced', probability=True)
+        model=svm.SVC(kernel='poly', degree=10, gamma='auto', C=1, class_weight='balanced', probability=True)
+        # model = BayesSearchCV(
+        #     svm.SVC(class_weight='balanced', probability=True),
+        #     {
+        #         'C': (1e-6, 1e+2, 'log-uniform'),
+        #         'gamma': (1e-6, 1e+1, 'log-uniform'),
+        #         'degree': (4, 6, 8),  # integer valued parameter
+        #         'kernel': ['linear', 'poly', 'rbf'],  # Categorical parameter
+        #     },
+        #     n_iter=32,
+        #     n_jobs=8,
+        #     n_points=8,
+        #     cv=3, 
+        #     scoring="roc_auc",
+        #     random_state=91
+        # )
         #################################### SVM ####################################
     elif method == "knn":
         #################################### KNN ####################################
         from sklearn.neighbors import KNeighborsClassifier
-        # model = KNeighborsClassifier(n_neighbors=5)
-        model = BayesSearchCV(
-            KNeighborsClassifier(), 
-            {
-                'n_neighbors' : list(range(2,11)) , 
-                'algorithm' : ['auto','ball_tree','kd_tree','brute']
-            }, 
-            n_iter=32, 
-            n_jobs=8,
-            n_points=8, 
-            cv=3, 
-            scoring="roc_auc",
-            random_state=91
-        )
+        model = KNeighborsClassifier(n_neighbors=8)
+        # model = BayesSearchCV(
+        #     KNeighborsClassifier(), 
+        #     {
+        #         'n_neighbors' : list(range(2,11)) , 
+        #         'algorithm' : ['auto','ball_tree','kd_tree','brute']
+        #     }, 
+        #     n_iter=32, 
+        #     n_jobs=8,
+        #     n_points=8, 
+        #     cv=3, 
+        #     scoring="roc_auc",
+        #     random_state=91
+        # )
         #################################### KNN ####################################
 
     elif method == "logistic":
