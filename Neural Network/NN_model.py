@@ -27,7 +27,7 @@ class NN_sklearn_wrapper:
         dataloader = DataLoader(dataset, self.batch_size, **kwargs)
         return dataloader
 
-    def fit(self, X, y, dev_X=None, dev_y=None, epochs=100, silent=False):
+    def fit(self, X, y, dev_X=None, dev_y=None, epochs=5, silent=False):
         train_loader = self.np_to_torchloader(
             X, y, shuffle=True, num_workers=4)
         optim = torch.optim.Adam(self.model.parameters(), lr=1e-3)
