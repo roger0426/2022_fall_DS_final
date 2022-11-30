@@ -6,6 +6,13 @@ from tqdm import tqdm
 
 class NN_sklearn_wrapper:
     def __init__(self, *args, **kwargs):
+        """
+        Arguments:
+            in_features: input feature dimension
+            n_layers: hidden layers of the NN, default=3
+            dropout: dropout for NN, default=0.1
+            hidden_size: size of the hidden state, default=256
+        """
         self.model = BinaryClf(*args, **kwargs).to('cuda')
         self.batch_size = 64
 
@@ -20,7 +27,7 @@ class NN_sklearn_wrapper:
         dataloader = DataLoader(dataset, self.batch_size, **kwargs)
         return dataloader
 
-    def fit(self, X, y, dev_X=None, dev_y=None, epochs=100):
+    def fit(self, X, y, dev_X=None, dev_y=None, epochs=100, silent=False):
         train_loader = self.np_to_torchloader(
             X, y, shuffle=True, num_workers=4)
         optim = torch.optim.Adam(self.model.parameters(), lr=1e-3)
@@ -28,9 +35,11 @@ class NN_sklearn_wrapper:
 
         best_score = 0
         best_state_dict = None
-        print(f"Training on {X.shape[0]} samples")
+        if not silent:
+            print(f"Training on {X.shape[0]} samples")
+            train_loader = tqdm(train_loader)
         for _ in range(epochs):
-            for X, y in tqdm(train_loader):
+            for X, y in train_loader:
                 X = X.to('cuda')
                 y = y.to('cuda').unsqueeze(1)
                 logits = self.model(X)

@@ -55,7 +55,7 @@ def main():
             'ind_viv_fin_ult1','ind_nomina_ult1','ind_nom_pens_ult1','ind_recibo_ult1']
     '''
     target_col = ["ind_cco_fin_ult1", "ind_ctop_fin_ult1",
-                  "ind_nom_pens_ult1", "ind_ctma_fin_ult1"]  # 0.65, 0.13, 0.07, 0.01
+                  "ind_nom_pens_ult1", "ind_ctma_fin_ult1"]
 
     # month3 = ['ind_ahor_fin_ult1_3month', 'ind_aval_fin_ult1_3month', 'ind_cco_fin_ult1_3month',
     #           'ind_cder_fin_ult1_3month', 'ind_cno_fin_ult1_3month', 'ind_ctju_fin_ult1_3month',
@@ -66,7 +66,7 @@ def main():
     #           'ind_tjcr_fin_ult1_3month', 'ind_valo_fin_ult1_3month', 'ind_viv_fin_ult1_3month',
     #           'ind_nomina_ult1_3month', 'ind_nom_pens_ult1_3month', 'ind_recibo_ult1_3month']
 
-    path = './debug.pkl'
+    path = '../data/train_preprocessed_v4.pkl'
     method = 'Nerual Network'
     data = pd.read_pickle(path)
 
