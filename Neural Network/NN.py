@@ -82,8 +82,6 @@ def main():
         print(target)
         fp.write(f"{target}\n")
 
-        train_col = one_hot_cols + numerical_cols + [target + '_history']
-
         X = np.concatenate(
             (x, np.expand_dims(data[target + '_history'].values, axis=1)), axis=1)
 
@@ -94,7 +92,7 @@ def main():
 
         best_model = f"./result/{method}/{target}_model.pkl"
         model = NN_sklearn_wrapper(in_features=X_train.shape[1])
-        model.fit(X_train, y_train)
+        model.fit(X_train, y_train, dev_X=X_test, dev_y=y_test, epochs=3)
 
         # 計算準確率
         score = model.score(X_train, y_train)

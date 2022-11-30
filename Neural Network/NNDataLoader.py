@@ -19,7 +19,7 @@ def _gen_debug_df(path):
 
 
 def main():
-    # _gen_debug_df('../data/train_preprocessed_v4.pkl')
+    _gen_debug_df('../data/train_preprocessed_v4.pkl')
     _get_df('./debug.pkl')
 
 
