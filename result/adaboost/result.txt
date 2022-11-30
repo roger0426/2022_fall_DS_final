@@ -1,0 +1,12 @@
+ind_cco_fin_ult1
+train roc_auc_score: 0.9277889224853257
+test roc_auc_score: 0.927684851118835
+ind_ctop_fin_ult1
+train roc_auc_score: 0.9774049675784998
+test roc_auc_score: 0.9772581402147724
+ind_nom_pens_ult1
+train roc_auc_score: 0.9630411607015593
+test roc_auc_score: 0.9629235512234171
+ind_ctma_fin_ult1
+train roc_auc_score: 0.9591225962738914
+test roc_auc_score: 0.9591834601126022
