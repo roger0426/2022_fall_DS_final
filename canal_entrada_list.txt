@@ -1,0 +1,4 @@
+['KAT', '013', 'KFA', 'NA', 'KFC', 'KAS', '007', 'KHK', 'KCH', 'KHN', 'KHC', 'KFD',
+ 'RED', 'KAW', 'KHM', 'KCC', 'KAY', '_others', 'KAG', 'KBZ', 'KCI', 'KAE', 'KAF',
+ 'KAA', 'KEY', 'KHL', 'KAH', 'KAR', 'KHE', 'KAQ', 'KAB', 'KAZ', 'KAJ', 'KAI', 'KAP',
+ 'KHQ', 'KHD', 'KHF']

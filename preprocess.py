@@ -1,4 +1,4 @@
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import argparse
 from pathlib import Path
@@ -13,7 +13,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-
+drop_column_list=['ind_empleado', 'fecha_alta', 'indrel_1mes', 'indresi', 'conyuemp', 'indfall', 'tipodom', 'cod_prov']
+drop_row_na_list=['sexo', 'age']
 to_bool_list = ['ind_ahor_fin_ult1', 'ind_aval_fin_ult1', 'ind_cco_fin_ult1', 'ind_cder_fin_ult1', 
 'ind_cno_fin_ult1', 'ind_ctju_fin_ult1', 'ind_ctma_fin_ult1', 
 'ind_ctop_fin_ult1', 'ind_ctpp_fin_ult1', 'ind_deco_fin_ult1', 'ind_deme_fin_ult1', 'ind_dela_fin_ult1', 
@@ -48,29 +49,49 @@ if __name__ == '__main__':
     
     data = pd.read_csv(args.input_data)
     logging.info('data reading done')
-    # data = data[:int(len(data)/100)]
+    # data = data[:int(len(data)/1000)]
+    # print(data.info(verbose=True))
+    data.drop(drop_column_list, axis=1, inplace=True)
+    # print(data.info(verbose=True))
 
     data['fecha_dato'] = pd.to_datetime(data['fecha_dato'])
-
     
     data = data.sort_values(by=['ncodpers', 'fecha_dato'])
     logging.info('data sorting done')
 
     #data = data[data['ncodpers'] < 43136] #for testing 
     
-    #clean data
-    #preprocessing age
-    data['age'] = data['age'].replace(' NA', -1).apply(int)
-    #Gender preprocess
+    # clean data
+    data.dropna(axis=0, subset=drop_row_na_list, inplace=True)
+    # preprocessing age
+    # data['age'] = data['age'].replace(' NA', -1).apply(int)
+    data['age'] = data['age'].astype(int)
+    data.drop(data[data['age'] >= 120].index, inplace = True)
+    # Gender preprocess
     data['sexo'] = data['sexo'].replace('H', 'male').replace('V', 'female')
-    #customer seniority preprocessing (how long the customer be a customer)
+    # customer seniority preprocessing (how long the customer be a customer)
     data['antiguedad'] = data['antiguedad'].str.strip().replace('NA', -1).fillna(-1).apply(int)
     anti_clean = data.groupby('ncodpers')['antiguedad'].max()
     data['antiguedad'] = data.join(anti_clean, on = 'ncodpers', how='left', rsuffix='_clean')['antiguedad_clean']
-    #customer household income preprocessing
+    # customer household income preprocessing
     data['renta'] = data['renta'].fillna(-1).apply(int)
-    #active customer preprocessing
+    # active customer preprocessing
     data['ind_actividad_cliente'] = data['ind_actividad_cliente'].fillna(0).astype(bool)
+    # canal_entrada gather classes whose sample < 1/100
+    data['canal_entrada'] = data['canal_entrada'].fillna('NA')
+    canal_entrada_others = [canel for canel in data['canal_entrada'].unique() if (data['canal_entrada'].value_counts()[canel] < len(data)/1000)]
+    # print(data['canal_entrada'].value_counts())
+    data['canal_entrada'] = data['canal_entrada'].replace(canal_entrada_others, '_others')
+    # print(data['canal_entrada'].value_counts())
+    # print(data['canal_entrada'].unique())
+
+    # pais_residencia gather classes whose sample < 1/100
+    data['pais_residencia'] = data['pais_residencia'].fillna('NA')
+    pais_residencia_others = [canel for canel in data['pais_residencia'].unique() if (data['pais_residencia'].value_counts()[canel] < len(data)/1000)]
+    data['pais_residencia'] = data['pais_residencia'].replace(pais_residencia_others, '_others')
+    print(data['pais_residencia'].value_counts())
+    print(data['pais_residencia'].unique())
+    
 
     logging.info('data cleaning done')
 
@@ -108,7 +129,7 @@ if __name__ == '__main__':
         else:
             customer_key.append(k)
 
-    print(data.info(verbose=True))
+    # print(data.info(verbose=True))
     logging.info('product key select done')
 
     # without   take 3.5 min for 1/100
@@ -149,9 +170,9 @@ if __name__ == '__main__':
         #data = data.join(three_month_product, how='left', lsuffix='', rsuffix='_three_month')
 
         # print('e')
-    for name, values in data.items():
-        print('{name}: {value}'.format(name=name, value=values[0]))
-    print(data.info(verbose=True))
+    # for name, values in data.items():
+    #     print('{name}: {value}'.format(name=name, value=values[0]))
+    # print(data.info(verbose=True))
 
     data = fillna(data)
 
@@ -159,12 +180,9 @@ if __name__ == '__main__':
     for target in int_down_list: data[target] = data[target].apply(pd.to_numeric, errors='coerce', downcast='integer')
     for target in float_down_list: data[target] = data[target].apply(pd.to_numeric, errors='coerce', downcast='float')
 
-
     print(data.info(verbose=True))
 
-
-
-    print(data.columns.tolist())
+    # print(data.columns.tolist())
     
     logging.info('product preprocessing done')
     data.to_pickle(args.output_data)
