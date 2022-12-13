@@ -96,14 +96,15 @@ def main():
         decomp = PCA(n_components=2)
         vecs = decomp.fit_transform(vecs)
         os.makedirs(os.path.join('./plot', target), exist_ok=True)
-        for hue in ['age', 'antiguedad', 'renta', 'ind_actividad_cliente']:
+        for hue in ['ind_nuevo', 'indrel', 'indext', 'ind_actividad_cliente', 'age', 'antiguedad', 'renta']:
+            print(hue, end=', ')
             plt.figure()
             sns.scatterplot(
                 data=data,
                 x=vecs[:, 0],
                 y=vecs[:, 1],
                 hue=hue
-            ).set_title(f"{target}/{hue}")
+            ).set_title(f"Product: {target}, Label: {hue}")
             plt.savefig(os.path.join('./plot', target, hue))
             plt.close()
 
