@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 
 
-def fillna(data):
+def fillna_and_dummy(data):
     #fillna
     # data['ind_empleado'] = data['ind_empleado'].fillna('NA')
     data['pais_residencia'] = data['pais_residencia'].fillna('NA')
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     data = pd.read_pickle(args.input_data)
-    data = fillna(data)
+    data = fillna_and_dummy(data)
 
     data.to_pickle(args.output_data)
     #dummy_data.to_pickle('train_preprocessed_dummy.pkl')

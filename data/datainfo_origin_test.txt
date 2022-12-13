@@ -1,0 +1,30 @@
+Data columns (total 24 columns):
+ #   Column                 Non-Null Count   Dtype
+---  ------                 --------------   -----
+ 0   fecha_dato             929615 non-null  object
+ 1   ncodpers               929615 non-null  int64
+ 2   ind_empleado           929615 non-null  object
+ 3   pais_residencia        929615 non-null  object
+ 4   sexo                   929610 non-null  object
+ 5   age                    929615 non-null  int64
+ 6   fecha_alta             929615 non-null  object
+ 7   ind_nuevo              929615 non-null  int64
+ 8   antiguedad             929615 non-null  int64
+ 9   indrel                 929615 non-null  int64
+ 10  ult_fec_cli_1t         1683 non-null    object
+ 11  indrel_1mes            929592 non-null  float64
+ 12  tiprel_1mes            929592 non-null  object
+ 13  indresi                929615 non-null  object
+ 14  indext                 929615 non-null  object
+ 15  conyuemp               104 non-null     object
+ 16  canal_entrada          927534 non-null  object
+ 17  indfall                929615 non-null  object
+ 18  tipodom                929615 non-null  int64
+ 19  cod_prov               925619 non-null  float64
+ 20  nomprov                925619 non-null  object
+ 21  ind_actividad_cliente  929615 non-null  int64
+ 22  renta                  929615 non-null  object
+ 23  segmento               927367 non-null  object
+dtypes: float64(2), int64(7), object(15)
+memory usage: 170.2+ MB
+

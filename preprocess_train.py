@@ -5,7 +5,7 @@ from pathlib import Path
 import logging 
 from tqdm import tqdm 
 
-from fillna import fillna
+from fillna_and_dummy import fillna_and_dummy
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s",
@@ -40,14 +40,15 @@ if __name__ == '__main__':
     logging.info('Start process')
     #data = pd.read_csv('train_ver2.csv')
     parser  = argparse.ArgumentParser()
-    parser.add_argument('--input_data', type=Path, default=Path('./origin_data/train_ver2.csv.zip'))
-    parser.add_argument('--output_data', type=Path, default=Path('preprocessed_test.pkl'))
+    parser.add_argument('--input_data', type=Path, default=Path('./data/train_ver2.csv.zip'))
+    parser.add_argument('--output_data', type=Path, default=Path('./data/test.pkl'))
 
 
     args = parser.parse_args()
 
     
     data = pd.read_csv(args.input_data)
+    print(data.info(verbose=True))
     logging.info('data reading done')
     # data = data[:int(len(data)/1000)]
     # print(data.info(verbose=True))
@@ -70,11 +71,12 @@ if __name__ == '__main__':
     # Gender preprocess
     data['sexo'] = data['sexo'].replace('H', 'male').replace('V', 'female')
     # customer seniority preprocessing (how long the customer be a customer)
-    data['antiguedad'] = data['antiguedad'].str.strip().replace('NA', -1).fillna(-1).apply(int)
+    if type(data['antiguedad']) == 'object':
+        data['antiguedad'] = data['antiguedad'].str.strip().replace('NA', -1).fillna(-1).apply(int)
     anti_clean = data.groupby('ncodpers')['antiguedad'].max()
     data['antiguedad'] = data.join(anti_clean, on = 'ncodpers', how='left', rsuffix='_clean')['antiguedad_clean']
     # customer household income preprocessing
-    data['renta'] = data['renta'].fillna(-1).apply(int)
+    data['renta'] = data['renta'].str.replace(' ', '').replace('NA', -1).fillna(-1).apply(float).apply(int)
     # active customer preprocessing
     data['ind_actividad_cliente'] = data['ind_actividad_cliente'].fillna(0).astype(bool)
     # canal_entrada gather classes whose sample < 1/100
@@ -174,7 +176,7 @@ if __name__ == '__main__':
     #     print('{name}: {value}'.format(name=name, value=values[0]))
     # print(data.info(verbose=True))
 
-    data = fillna(data)
+    data = fillna_and_dummy(data)
 
     for target in to_bool_list: data[target] = data[target].astype(bool)
     for target in int_down_list: data[target] = data[target].apply(pd.to_numeric, errors='coerce', downcast='integer')
