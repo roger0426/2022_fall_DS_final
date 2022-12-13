@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -14,7 +15,7 @@ class NN_sklearn_wrapper:
             hidden_size: size of the hidden state, default=256
         """
         self.model = BinaryClf(*args, **kwargs).to('cuda')
-        self.batch_size = 64
+        self.batch_size = 1024
 
     def np_to_torchloader(self, X, y=None, **kwargs):
         X = torch.from_numpy(X).type(torch.float)
@@ -99,19 +100,28 @@ class NN_sklearn_wrapper:
             pickle.dump(self, f)
 
     @torch.no_grad()
-    def get_latent(self, x):
-        latent_vector = None
+    def get_latent(self, X):
+        latent_vector = []
 
         def hook(module, input, output):
             nonlocal latent_vector
-            latent_vector = input[0]  # is a tuple of (1,)
+            latent_vector.append(input[0].cpu().numpy())  # is a tuple of (1,)
 
-        if x.dim() <= 1:
-            x = x.unsqueeze(0)
-        assert x.dim() == 2
+        if X.ndim <= 1:
+            X = X.unsqueeze(0)
+        assert X.ndim == 2
+
+        data_loader = self.np_to_torchloader(X, shuffle=False, num_workers=4)
+
         self.model.clf.eval()
         self.model.clf[-1].register_forward_hook(hook)
-        self.model.forward_feature(x)
+
+        # dummy call, for injection
+        for x in tqdm(data_loader):
+            x = x[0].to('cuda')
+            self.model(x)
+
+        latent_vector = np.concatenate(latent_vector, axis=0)
         return latent_vector
 
 
