@@ -100,6 +100,22 @@ class NN_sklearn_wrapper:
         with open(path, 'wb') as f:
             pickle.dump(self, f)
 
+    @torch.no_grad()
+    def get_latent(self, x):
+        latent_vector = None
+
+        def hook(module, input, output):
+            nonlocal latent_vector
+            latent_vector = input[0]  # is a tuple of (1,)
+
+        if x.dim() <= 1:
+            x = x.unsqueeze(0)
+        assert x.dim() == 2
+        self.model.clf.eval()
+        self.model.clf[-1].register_forward_hook(hook)
+        self.model.forward_feature(x)
+        return latent_vector
+
 
 class BinaryClf(nn.Module):
     def __init__(self, in_features, n_layers=3, dropout=0.1, hidden_size=256) -> None:
@@ -122,3 +138,9 @@ class BinaryClf(nn.Module):
     def forward(self, X):
         logits = self.clf(X)
         return logits
+
+
+if __name__ == '__main__':
+    model = NN_sklearn_wrapper(52)
+    vec = model.get_latent(torch.rand(2, 52))
+    print(vec, vec.shape)
