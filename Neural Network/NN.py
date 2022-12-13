@@ -66,71 +66,72 @@ def main():
     #           'ind_tjcr_fin_ult1_3month', 'ind_valo_fin_ult1_3month', 'ind_viv_fin_ult1_3month',
     #           'ind_nomina_ult1_3month', 'ind_nom_pens_ult1_3month', 'ind_recibo_ult1_3month']
 
-    path = '../data/train_preprocessed_v4.pkl'
+    path = './debug.pkl'
+    # path = '../data/train_preprocessed_v4.pkl'
     method = 'Nerual Network'
     data = pd.read_pickle(path)
 
     os.makedirs(f'./result/{method}', exist_ok=True)
-    fp = open(f"./result/{method}/result.txt", "w")
 
-    scaled_features = StandardScaler().fit_transform(
-        data[numerical_cols].values)
-    x = np.concatenate((data[one_hot_cols].values, scaled_features), axis=1)
+    with open(f"./result/{method}/result.log", "w") as fp:
 
-    for target in target_col:
+        scaled_features = StandardScaler().fit_transform(
+            data[numerical_cols].values)
+        x = np.concatenate(
+            (data[one_hot_cols].values, scaled_features), axis=1)
 
-        print(target)
-        fp.write(f"{target}\n")
+        for target in target_col:
 
-        X = np.concatenate(
-            (x, np.expand_dims(data[target + '_history'].values, axis=1)), axis=1)
+            print(target)
+            fp.write(f"{target}\n")
 
-        y = data[target + '_3month'].values
+            X = np.concatenate(
+                (x, np.expand_dims(data[target + '_history'].values, axis=1)), axis=1)
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y)
+            y = data[target + '_3month'].values
 
-        best_model = f"./result/{method}/{target}_model.pkl"
-        model = NN_sklearn_wrapper(in_features=X_train.shape[1])
-        model.fit(X_train, y_train, dev_X=X_test, dev_y=y_test)
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y)
 
-        # 計算準確率
-        score = model.score(X_train, y_train)
-        print('train roc_auc_score: ', score)
-        fp.write(f"train roc_auc_score: {score}\n")
-        score = model.score(X_test, y_test)
-        print('test roc_auc_score: ', score)
-        fp.write(f"test roc_auc_score: {score}\n")
+            best_model = f"./result/{method}/{target}_model.pkl"
+            model = NN_sklearn_wrapper(in_features=X_train.shape[1])
+            model.fit(X_train, y_train, dev_X=X_test, dev_y=y_test)
 
-        # get confusion matrix
-        probs = model.predict_proba(X_test)
-        pred = np.argmax(probs, 1)
-        confusion_matrix = pd.crosstab(y_test, pred,
-                                       rownames=['Actual'],
-                                       colnames=['Predicted'])
-        plot = sns.heatmap(confusion_matrix, linewidth=.5,
-                           annot=True, fmt=',.0f')
-        plot.set_title(f'{method} % {target}')
-        fig = plot.get_figure()
-        fig.savefig(f'./result/{method}/{target}_confmat.png')
-        plt.clf()
+            # 計算準確率
+            score = model.score(X_train, y_train)
+            print('train roc_auc_score: ', score)
+            fp.write(f"train roc_auc_score: {score}\n")
+            score = model.score(X_test, y_test)
+            print('test roc_auc_score: ', score)
+            fp.write(f"test roc_auc_score: {score}\n")
 
-        # keep probabilities for the positive outcome only
-        probs = probs[:, 1]
-        # calculate scores
-        # auc = roc_auc_score(y_test, probs)
-        # calculate roc curves
-        fpr, tpr, _ = roc_curve(y_test, probs)
-        plt.plot(fpr, tpr, marker='.')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title(f'{method} % {target} % ROC')
-        plt.savefig(f'./result/{method}/{target}_roc.png')
-        plt.clf()
-        # save the model
-        model.save_model(best_model)
+            # get confusion matrix
+            probs = model.predict_proba(X_test)
+            pred = np.argmax(probs, 1)
+            confusion_matrix = pd.crosstab(y_test, pred,
+                                           rownames=['Actual'],
+                                           colnames=['Predicted'])
+            plot = sns.heatmap(confusion_matrix, linewidth=.5,
+                               annot=True, fmt=',.0f')
+            plot.set_title(f'{method} % {target}')
+            fig = plot.get_figure()
+            fig.savefig(f'./result/{method}/{target}_confmat.png')
+            plt.clf()
 
-    fp.close()
+            # keep probabilities for the positive outcome only
+            probs = probs[:, 1]
+            # calculate scores
+            # auc = roc_auc_score(y_test, probs)
+            # calculate roc curves
+            fpr, tpr, _ = roc_curve(y_test, probs)
+            plt.plot(fpr, tpr, marker='.')
+            plt.xlabel('False Positive Rate')
+            plt.ylabel('True Positive Rate')
+            plt.title(f'{method} % {target} % ROC')
+            plt.savefig(f'./result/{method}/{target}_roc.png')
+            plt.clf()
+            # save the model
+            model.save_model(best_model)
 
 
 if __name__ == '__main__':

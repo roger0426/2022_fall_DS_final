@@ -27,19 +27,17 @@ class NN_sklearn_wrapper:
         dataloader = DataLoader(dataset, self.batch_size, **kwargs)
         return dataloader
 
-    def fit(self, X, y, dev_X=None, dev_y=None, epochs=5, silent=False):
+    def fit(self, X, y, dev_X=None, dev_y=None, epochs=20, silent=False):
         train_loader = self.np_to_torchloader(
             X, y, shuffle=True, num_workers=4)
-        optim = torch.optim.Adam(self.model.parameters(), lr=1e-3)
+        optim = torch.optim.Adam(self.model.parameters(), lr=0.5)
         loss_fn = torch.nn.BCEWithLogitsLoss()
 
         best_score = 0
         best_state_dict = None
-        if not silent:
-            print(f"Training on {X.shape[0]} samples")
-            train_loader = tqdm(train_loader)
+        print(f"Training on {X.shape[0]} samples")
         for _ in range(epochs):
-            for X, y in train_loader:
+            for X, y in tqdm(train_loader):
                 X = X.to('cuda')
                 y = y.to('cuda').unsqueeze(1)
                 logits = self.model(X)
@@ -54,7 +52,7 @@ class NN_sklearn_wrapper:
             score = self.score(dev_X, dev_y, silent=True)
             if score > best_score:
                 best_score = score
-                best_state_dict = self.model.state_dict()
+                best_state_dict = self.model.   state_dict()
                 print(f"Updated best weight with score = {best_score}")
 
         if best_state_dict:

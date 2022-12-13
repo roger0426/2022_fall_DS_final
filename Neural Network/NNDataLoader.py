@@ -14,7 +14,8 @@ def _get_df(path: Union[Path, str]):
 
 def _gen_debug_df(path):
     df: pd.DataFrame = pd.read_pickle(path)
-    df = df.iloc[:10000]
+    df = df.sample(int(0.1 * len(df)))
+    print(len(df))
     df.to_pickle('./debug.pkl')
 
 
